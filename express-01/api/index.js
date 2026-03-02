@@ -14,3 +14,5 @@ app.listen(port, () =>
     "Example app listening on port " + port + "!\n" + process.env.MESSAGE
   )
 );
+
+export default app;
