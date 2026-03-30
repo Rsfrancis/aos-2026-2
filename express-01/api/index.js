@@ -35,17 +35,6 @@ app.get("/", (req, res) => {
 const port = process.env.PORT ?? 3000;
 const eraseDatabaseOnSync = process.env.ERASE_DATABASE_ON_SYNC === "true";
 
-sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-  if (eraseDatabaseOnSync) {
-    createUsersWithMessages();
-  }
-
-  app.listen(port, () =>
-    console.log(
-      "Express-01 app listening on port " + port + "!\n" + process.env.MESSAGE,
-    ),
-  );
-});
 
 const createUsersWithMessages = async () => {
   await models.User.create(
@@ -81,5 +70,14 @@ const createUsersWithMessages = async () => {
     },
   );
 };
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  const status = err.status || 500;
+  const message = err.message || 'Erro interno do servidor';
+  res.status(status).json({ error: message });
+});
+
+sequelize.sync();
 
 export default app;

@@ -1,27 +1,58 @@
-import { Router } from "express";
+const express = require('express');
+const router = express.Router();
+const userModel = require('../models/user');
 
-const router = Router();
-
-router.get("/", async (req, res) => {
-  const users = await req.context.models.User.findAll();
-  return res.send(users);
+router.post('/', async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    const user = await userModel.createUser(name, email);
+    res.status(201).json(user); // 201 = criado com sucesso
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get("/:userId", async (req, res) => {
-  const user = await req.context.models.User.findByPk(req.params.userId);
-  return res.send(user);
+router.get('/', async (req, res, next) => {
+  try {
+    const users = await userModel.getUsers();
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post("/", (req, res) => {
-  return res.send("POST HTTP method on user resource");
+router.get('/:id', async (req, res, next) => {
+  try {
+    const user = await userModel.getUserById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' }); // 404 = não encontrado
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.put("/:userId", (req, res) => {
-  return res.send(`PUT HTTP method on user/${req.params.userId} resource`);
+router.put('/:id', async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    const user = await userModel.updateUser(req.params.id, name, email);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.delete("/:userId", (req, res) => {
-  return res.send(`DELETE HTTP method on user/${req.params.userId} resource`);
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await userModel.deleteUser(req.params.id);
+    res.status(200).json({ message: 'User deletado' });
+  } catch (err) {
+    next(err);
+  }
 });
 
-export default router;
+module.exports = router;
