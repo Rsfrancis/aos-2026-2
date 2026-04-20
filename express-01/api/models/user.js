@@ -2,9 +2,11 @@ import { DataTypes } from "sequelize";
 
 const user = (sequelize) => {
   const User = sequelize.define("user", {
+
     username: {
       type: DataTypes.STRING,
     },
+
     email: {
       type: DataTypes.STRING,
     },
@@ -12,6 +14,12 @@ const user = (sequelize) => {
 
   User.associate = (models) => {
     User.hasMany(models.Message, { onDelete: "CASCADE" });
+  };
+
+  User.findByLogin = async (login) => {
+    return await User.findOne({
+      where: { email: login },
+    });
   };
 
   return User;

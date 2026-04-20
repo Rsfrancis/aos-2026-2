@@ -25,6 +25,7 @@ app.use((req, res, next) => {
 app.use("/session", routes.session);
 app.use("/users", routes.user);
 app.use("/messages", routes.message);
+app.use("/tarefas", routes.tarefa);
 
 app.get("/", (req, res) => {
   res.send(
@@ -32,7 +33,6 @@ app.get("/", (req, res) => {
   );
 });
 
-const port = process.env.PORT ?? 3000;
 const eraseDatabaseOnSync = process.env.ERASE_DATABASE_ON_SYNC === "true";
 
 
@@ -79,5 +79,11 @@ app.use((err, req, res, next) => {
 });
 
 sequelize.sync();
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});
 
 export default app;
