@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
   res.send("API rodando 🚀");
 });
 
-sequelize.sync().catch(console.error);
+//sequelize.sync().catch(console.error);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
