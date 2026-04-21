@@ -2,7 +2,7 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 
-import models, { sequelize } from "./models";
+//import models, { sequelize } from "./models";
 import routes from "./routes";
 
 const app = express();
@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(async (req, res, next) => {
   req.context = {
-    models,
+    models: null,
     me: null,
   };
   next();
@@ -25,10 +25,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/session", routes.session);
-app.use("/users", routes.user);
-app.use("/messages", routes.message);
-app.use("/tarefas", routes.tarefa);
+//app.use("/session", routes.session);
+//app.use("/users", routes.user);
+//app.use("/messages", routes.message);
+//app.use("/tarefas", routes.tarefa);
 
 app.get("/", (req, res) => {
   res.send("API rodando 🚀");
