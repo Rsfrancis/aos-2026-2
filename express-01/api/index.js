@@ -25,12 +25,17 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/teste", (req, res) => {
+  res.send("FUNCIONANDO TESTE");
+});
+
 app.use("/", routes.tarefa);
 
-//app.use("/session", routes.session);
+app.use("/tarefas", routes.tarefa);
 //app.use("/users", routes.user);
 //app.use("/messages", routes.message);
-app.use("/tarefas", routes.tarefa);
+//app.use("/session", routes.session);
+
 
 app.get("/", (req, res) => {
   res.send("API rodando 🚀");
