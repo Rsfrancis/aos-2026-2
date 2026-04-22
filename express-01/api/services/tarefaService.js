@@ -1,51 +1,46 @@
 const { v4: uuidv4 } = require('uuid');
+const { Pool } = require('pg');
 
-const tarefas = [];
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-exports.criar = (dados) => {
-    if (!dados.descricao) {
-        throw new Error("Descrição é obrigatória");
-    }
+pool.query(`CREATE TABLE IF NOT EXISTS tarefas (
+  "objectId" VARCHAR PRIMARY KEY,
+  descricao VARCHAR NOT NULL,
+  concluida BOOLEAN DEFAULT false
+)`);
 
-    const novaTarefa = {
-        objectId: uuidv4(),
-        descricao: dados.descricao,
-        concluida: dados.concluida ?? false
-    };
-
-    tarefas.push(novaTarefa);
-    return novaTarefa;
+exports.criar = async (dados) => {
+  if (!dados.descricao) throw new Error("Descrição é obrigatória");
+  const id = uuidv4();
+  const { rows } = await pool.query(
+    `INSERT INTO tarefas ("objectId", descricao, concluida) VALUES ($1, $2, $3) RETURNING *`,
+    [id, dados.descricao, dados.concluida ?? false]
+  );
+  return rows[0];
 };
 
-exports.listar = () => {
-    return tarefas;
+exports.listar = async () => {
+  const { rows } = await pool.query(`SELECT * FROM tarefas`);
+  return rows;
 };
 
-exports.buscarPorId = (objectId) => {
-    return tarefas.find(t => t.objectId === objectId);
+exports.buscarPorId = async (objectId) => {
+  const { rows } = await pool.query(`SELECT * FROM tarefas WHERE "objectId" = $1`, [objectId]);
+  return rows[0] || null;
 };
 
-exports.atualizar = (objectId, dados) => {
-    const tarefa = tarefas.find(t => t.objectId === objectId);
-
-    if (!tarefa) return null;
-
-    if (dados.descricao !== undefined) {
-        tarefa.descricao = dados.descricao;
-    }
-
-    if (dados.concluida !== undefined) {
-        tarefa.concluida = dados.concluida;
-    }
-
-    return tarefa;
+exports.atualizar = async (objectId, dados) => {
+  const { rows } = await pool.query(
+    `UPDATE tarefas SET descricao = COALESCE($1, descricao), concluida = COALESCE($2, concluida) WHERE "objectId" = $3 RETURNING *`,
+    [dados.descricao, dados.concluida, objectId]
+  );
+  return rows[0] || null;
 };
 
-exports.remover = (objectId) => {
-    const index = tarefas.findIndex(t => t.objectId === objectId);
-
-    if (index === -1) return false;
-
-    tarefas.splice(index, 1);
-    return true;
+exports.remover = async (objectId) => {
+  const { rows } = await pool.query(`DELETE FROM tarefas WHERE "objectId" = $1 RETURNING *`, [objectId]);
+  return rows.length > 0;
 };
